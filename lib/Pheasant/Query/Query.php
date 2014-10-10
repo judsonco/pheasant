@@ -16,6 +16,7 @@ class Query implements \IteratorAggregate, \Countable
     private $_limit=null;
     private $_lock=null;
     private $_where;
+    private $_having;
     private $_group;
     private $_order=array();
     private $_distinct=false;
@@ -118,6 +119,46 @@ class Query implements \IteratorAggregate, \Countable
     }
 
     /**
+     * Sets the where clause to the provided sql, optionally binding
+     * parameters into the string.
+     * @chainable
+     */
+    public function having($sql=null, $params=array())
+    {
+        $this->_having = new Criteria($sql, $params);
+
+        return $this;
+    }
+
+    /**
+     * Adds an extra criteria to the where clause with an AND
+     * @chainable
+     */
+    public function andHaving($sql=null, $params=array())
+    {
+        if(!isset($this->_having))
+            $this->_having = new Criteria();
+
+        $this->_having->and(new Criteria($sql, $params));
+
+        return $this;
+    }
+
+    /**
+     * Adds an extra criteria to the where clause with an OR
+     * @chainable
+     */
+    public function orHaving($sql=null, $params=array())
+    {
+        if(!isset($this->_having))
+            $this->_having = new Criteria();
+
+        $this->_having->or(new Criteria($sql, $params));
+
+        return $this;
+    }
+    
+    /**
      * Adds an INNER JOIN clause, either with a {@link Query} object or raw sql
      * @chainable
      */
@@ -218,6 +259,7 @@ class Query implements \IteratorAggregate, \Countable
             implode(' ', $this->_joins),
             $this->_clause('WHERE', $this->_where),
             $this->_clause('GROUP BY', $this->_group),
+            $this->_clause('HAVING', $this->_having),
             $this->_clause('ORDER BY', $this->_order),
             $this->_limit,
             $this->_lock

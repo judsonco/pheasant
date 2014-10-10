@@ -130,13 +130,10 @@ class Relationship
         $remoteTable = $instance->mapperFor($rel->class)->table();
 
         $joinMethod = $joinType.'Join';
-        $query->$joinMethod($remoteTable->name()->table, sprintf(
-            'ON `%s`.`%s`=`%s`.`%s`',
-            $parentAlias,
-            $rel->local,
-            $alias,
-            $rel->foreign
-            ),
+        $queryString = array_map(function($local, $foreign)use($parentAlias, $alias){ return sprintf('`%s`.`%s`=`%s`.`%s`', $parentAlias, $local, $alias, $foreign); }, $rel->local, $rel->foreign);
+        $query->$joinMethod(
+            $remoteTable->name()->table,
+            'ON '.implode(' AND ', $queryString),
             $alias
         );
 

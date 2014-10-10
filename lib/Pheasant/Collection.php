@@ -95,10 +95,18 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      * Adds a filter to the collection
      * @chainable
      */
-    public function filter($sql, $params=array())
+    public function filter($sql, $params=array(), $type = 'WHERE')
     {
-        $this->_queryForWrite()->andWhere($sql, $params);
-
+        switch(strtoupper($type)) {
+            default:
+            case 'WHERE':
+                $this->_queryForWrite()->andWhere($sql, $params);
+            break;
+            case 'HAVING':
+                $this->_queryForWrite()->andHaving($sql, $params);
+            break;
+        }
+        
         return $this;
     }
 

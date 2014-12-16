@@ -20,7 +20,11 @@ class DateTime extends Base
      */
     public function unmarshal($value)
     {
-        return new \DateTime($value);
+        if(!($value instanceof \DateTime)){
+            return new \DateTime($value);
+        } else {
+            if($value instanceof \DateTime) return $value;
+        }
     }
 
     /* (non-phpdoc)

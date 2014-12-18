@@ -100,7 +100,7 @@ class DomainObject implements \ArrayAccess
             });
         }, false);
 
-        $bt = Closure::bind($t, $this);
+        $bt = \Closure::bind($t, $this);
 
         // Execute transaction bound to $this
         $bt->execute();
@@ -160,7 +160,7 @@ class DomainObject implements \ArrayAccess
             });
         }, false);
 
-        $bt = Closure::bind($t, $this);
+        $bt = \Closure::bind($t, $this);
         $bt->execute();
 
         return $this;

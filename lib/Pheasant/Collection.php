@@ -209,7 +209,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
             }
         }, false);
 
-        $bt = Closure::bind($t, $this);
+        $bt = \Closure::bind($t, $this);
         $bt->execute();
 
         return $this;
@@ -229,7 +229,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
             }
         }, false);
 
-        $bt = Closure::bind($t, $this);
+        $bt = \Closure::bind($t, $this);
         $bt->execute();
 
         return $this;

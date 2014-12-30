@@ -91,12 +91,16 @@ class DomainObject implements \ArrayAccess
         $event = $this->isSaved() ? 'Update' : 'Create';
         $mapper = Pheasant::instance()->mapperFor($this);
 
-        $this->events()->wrap(array($event, 'Save'), $this, function($obj) use ($mapper) {
-            $mapper->save($obj);
+        $c = function()use($event, $mapper){
+            $this->events()->wrap(array($event, 'Save'), $this, function($obj) use ($mapper) {
+                $mapper->save($obj);
 
-            // ensure we clear the changes before after events fire
-            $obj->markSaved(true)->clearChanges();
-        });
+                // ensure we clear the changes before after events fire
+                $obj->markSaved(true)->clearChanges();
+            });
+        };
+
+        \Pheasant::transaction(\Closure::bind($c, $this));
 
         return $this;
     }
@@ -144,12 +148,16 @@ class DomainObject implements \ArrayAccess
     {
         $mapper = Pheasant::instance()->mapperFor($this);
 
-        $this->events()->wrap(array('Delete'), $this, function($obj) use ($mapper) {
-            $mapper->delete($obj);
+        $c = function()use($mapper){
+            $this->events()->wrap(array('Delete'), $this, function($obj) use ($mapper) {
+                $mapper->delete($obj);
 
-            // ensure we clear the changes before after events fire
-            $obj->markSaved(false)->clearChanges();
-        });
+                // ensure we clear the changes before after events fire
+                $obj->markSaved(false)->clearChanges();
+            });
+        };
+
+        \Pheasant::transaction(\Closure::bind($c, $this));
 
         return $this;
     }

@@ -201,10 +201,15 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      */
     public function save($callback)
     {
-        foreach ($this as $object) {
-            call_user_func($callback, $object);
-            if($object->changes()) $object->save();
-        }
+
+        $c = function()use($callback){
+            foreach ($this as $object) {
+                call_user_func($callback, $object);
+                if($object->changes()) $object->save();
+            }
+        };
+
+        \Pheasant::transaction(\Closure::bind($c, $this));
 
         return $this;
     }
@@ -215,10 +220,15 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      */
     public function delete()
     {
-        // TODO: optimize this down into a single SQL call
-        foreach ($this as $object) {
-            $object->delete();
-        }
+
+        $c = function(){
+            // TODO: optimize this down into a single SQL call
+            foreach ($this as $object) {
+                $object->delete();
+            }
+        };
+
+        \Pheasant::transaction(\Closure::bind($c, $this));
 
         return $this;
     }

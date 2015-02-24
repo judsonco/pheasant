@@ -90,6 +90,7 @@ class DomainObject implements \ArrayAccess
     {
         $event = $this->isSaved() ? 'Update' : 'Create';
         $mapper = Pheasant::instance()->mapperFor($this);
+        $wasCreate = !$this->isSaved();
 
         $self = $this;
         $closure = function () use ($event, $mapper, $self) {
@@ -104,6 +105,9 @@ class DomainObject implements \ArrayAccess
         };
 
         \Pheasant::transaction($closure);
+
+        # Simulate a hydrate event on creation
+        if($wasCreate) $this->events()->trigger('afterHydrate', $this);
 
         return $this;
     }

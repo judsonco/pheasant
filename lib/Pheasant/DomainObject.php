@@ -104,7 +104,7 @@ class DomainObject implements \ArrayAccess
         \Pheasant::transaction(\Closure::bind($c, $this));
 
         # Simulate a hydrate event on creation
-        if($wasCreate) $this->events()->trigger('afterHydrate');
+        if($wasCreate) $this->events()->trigger('afterHydrate', $this);
 
         return $this;
     }

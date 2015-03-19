@@ -114,12 +114,18 @@ class Relationship
      * takes a nested list of relationships that will be recursively joined as needed.
      * @return void
      */
-    public static function addJoin($query, $parentAlias, $schema, $relName, $nested=array(), $joinType='inner')
+    public static function addJoin($query, $parentAlias, $schema, $relName, $nested=array(), $joinType='inner', $ons = '')
     {
         if (!in_array($joinType, array('inner','left','right'))) {
             throw new \InvalidArgumentException("Unsupported join type: $joinType");
         }
-
+        
+        if(is_array($ons)) {
+            $on = array_shift($ons);
+        } else {
+            $on = $ons;
+        }
+        
         list($relName, $alias) = self::parseRelName($relName);
         $rel = $schema->relationship($relName);
 
@@ -136,12 +142,12 @@ class Relationship
             $rel->local,
             $alias,
             $rel->foreign
-            ),
+            ).($on ? ' AND '.$on : ''),
             $alias
         );
 
         foreach (self::normalizeMap($nested) as $relName=>$nested) {
-            self::addJoin($query, $alias, $remoteSchema, $relName, $nested, $joinType);
+            self::addJoin($query, $alias, $remoteSchema, $relName, $nested, $joinType, $ons);
         }
     }
 

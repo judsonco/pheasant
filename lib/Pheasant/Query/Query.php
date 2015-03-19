@@ -305,14 +305,14 @@ class Query implements \IteratorAggregate, \Countable
     private function _join($type, $mixed, $criteria, $alias='')
     {
         if (is_object($mixed)) {
-            $k = strtolower(sprintf('%s (%s) %s %s', $type, $mixed, $alias ?: 'derived', $criteria));
-            $this->_joins [$k]= sprintf('%s (%s) %s %s', $type, $mixed, $alias ?: 'derived', $criteria);
+            $j = sprintf('%s (%s) %s %s', $type, $mixed, $alias ?: 'derived', $criteria);
+            $this->_joins [strtolower($j)]= $j;
         } elseif ($alias) {
-            $k = strtolower(sprintf('%s `%s` AS `%s` %s', $type, $mixed, $alias, $criteria));
-            $this->_joins [$k]= sprintf('%s `%s` AS `%s` %s', $type, $mixed, $alias, $criteria);
+            $j = sprintf('%s `%s` AS `%s` %s', $type, $mixed, $alias, $criteria);
+            $this->_joins [strtolower($j)]= $j;
         } else {
-            $k = strtolower(sprintf('%s `%s` %s', $type, $mixed, $criteria));
-            $this->_joins [$k]= sprintf('%s `%s` %s', $type, $mixed, $criteria);
+            $j = sprintf('%s `%s` %s', $type, $mixed, $criteria);
+            $this->_joins [strtolower($j)]= $j;
         }
 
         return $this;

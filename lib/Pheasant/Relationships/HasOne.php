@@ -33,7 +33,7 @@ class HasOne extends Relationship
     {
         if ($cache) {
             $schema = \Pheasant::instance()->schema($this->class);
-            if ($cached = $cache->get(str_replace($this->local, $this->foreign, $schema->hash($object, array($this->local))))) {
+            if ($cached = $cache->get($schema->hash($object, array($this->local), array($this->foreign)))) {
                 return $schema->hydrate($cached);
             }
         }

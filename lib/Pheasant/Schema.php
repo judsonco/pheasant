@@ -65,13 +65,14 @@ class Schema
     /**
      * Returns a hash in the form Class[key=val]
      */
-    public function hash($object, $keys)
+    public function hash($object, $keys, $foreignKeys=array())
     {
         $keyValues = array_map(
-            function ($k) use ($object) {
-                return sprintf('%s=%s', $k, $object->$k);
+            function ($k, $fk) use ($object) {
+                return sprintf('%s=%s', ($fk)?:$k, $object->$k);
             },
-            $keys
+            $keys,
+            $foreignKeys
         );
 
         return sprintf('%s[%s]', $this->_class, implode(',', $keyValues));

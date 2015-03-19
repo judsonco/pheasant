@@ -11,14 +11,14 @@ class Query implements \IteratorAggregate, \Countable
 {
     // query builder
     private $_select='*';
-    private $_from=array();
-    private $_joins=array();
+    private $_from=[];
+    private $_joins=[];
     private $_limit=null;
     private $_lock=null;
     private $_where;
     private $_having;
     private $_group;
-    private $_order=array();
+    private $_order=[];
     private $_distinct=false;
 
     // resultset
@@ -157,7 +157,7 @@ class Query implements \IteratorAggregate, \Countable
 
         return $this;
     }
-    
+
     /**
      * Adds an INNER JOIN clause, either with a {@link Query} object or raw sql
      * @chainable
@@ -256,7 +256,7 @@ class Query implements \IteratorAggregate, \Countable
             $this->_clause(($this->_distinct
                 ? 'SELECT DISTINCT' : 'SELECT'), $this->_select),
             $this->_clause('FROM', $this->_from),
-            implode(' ', $this->_joins),
+            implode(' ', array_values($this->_joins)),
             $this->_clause('WHERE', $this->_where),
             $this->_clause('GROUP BY', $this->_group),
             $this->_clause('HAVING', $this->_having),
@@ -305,11 +305,14 @@ class Query implements \IteratorAggregate, \Countable
     private function _join($type, $mixed, $criteria, $alias='')
     {
         if (is_object($mixed)) {
-            $this->_joins []= sprintf('%s (%s) %s %s', $type, $mixed, $alias ?: 'derived', $criteria);
+            $k = strtolower(sprintf('%s (%s) %s %s', $type, $mixed, $alias ?: 'derived', $criteria));
+            $this->_joins [$k]= sprintf('%s (%s) %s %s', $type, $mixed, $alias ?: 'derived', $criteria);
         } elseif ($alias) {
-            $this->_joins []= sprintf('%s `%s` AS `%s` %s', $type, $mixed, $alias, $criteria);
+            $k = strtolower(sprintf('%s `%s` AS `%s` %s', $type, $mixed, $alias, $criteria));
+            $this->_joins [$k]= sprintf('%s `%s` AS `%s` %s', $type, $mixed, $alias, $criteria);
         } else {
-            $this->_joins []= sprintf('%s `%s` %s', $type, $mixed, $criteria);
+            $k = strtolower(sprintf('%s `%s` %s', $type, $mixed, $criteria));
+            $this->_joins [$k]= sprintf('%s `%s` %s', $type, $mixed, $criteria);
         }
 
         return $this;

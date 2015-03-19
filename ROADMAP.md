@@ -25,8 +25,4 @@ Pheasant Roadmap
 - Object Relationships: N:M support
 - Static Relationships (return a fixed collection of objects)
 - Cascading Delete
-- Pluggable backends for object caching 
-
-
-
-	
+- Pluggable backends for object caching

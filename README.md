@@ -14,7 +14,7 @@ Status of Development
 
 Running in production on 99designs.com. See `ROADMAP` for more details on future plans.
 
-[![Build Status](https://travis-ci.org/lox/pheasant.png)](https://travis-ci.org/lox/pheasant)
+[![Build Status](https://travis-ci.org/judsonco/pheasant.svg?branch=master)](https://travis-ci.org/judsonco/pheasant)
 
 Installing
 ---------------------------------

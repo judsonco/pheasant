@@ -361,7 +361,12 @@ class DomainObject implements \ArrayAccess
     public function override($property, $closure)
     {
         $this->_overriden[$property] = $closure;
+        $k = implode(',',array_keys($this->_overriden));
         return $this;
+    }
+
+    public function overridden(){
+      return $this->_overriden;
     }
 
     // ----------------------------------------

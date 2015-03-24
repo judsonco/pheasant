@@ -156,6 +156,7 @@ class FindingTestCase extends \Pheasant\Tests\MysqlTestCase
 
     public function testFilterViaInvoke()
     {
+        $this->markTestSkipped('Removed invoke so that Collections could be directly passed to mustache templates');
         $users = User::find();
         $filtered = $users("firstname = ?", 'Frank');
 

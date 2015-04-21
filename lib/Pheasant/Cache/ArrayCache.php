@@ -24,9 +24,9 @@ class ArrayCache implements \Pheasant\Cache
         return $value ? $value : false;
     }
 
-    public function add($object)
+    public function add($object, $identity=null)
     {
-        $this->_cache[(string) $object->identity()] = $object;
+        $this->_cache[(string) ($identity ? $identity : $object->identity())] = $object;
     }
 
     public function clear()

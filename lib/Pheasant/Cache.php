@@ -21,7 +21,7 @@ interface Cache
     /**
      * Add or override a row in the cache. Expects a DomainObject
      */
-    public function add($object);
+    public function add($object, $identity=null);
 
     /**
      * Clears the entire cache

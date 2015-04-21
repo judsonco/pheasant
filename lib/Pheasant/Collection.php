@@ -4,6 +4,7 @@ namespace Pheasant;
 
 use \Pheasant;
 use \Pheasant\Query\QueryIterator;
+use \Pheasant\Query\RestrictedQueryIterator;
 
 class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
 {
@@ -31,6 +32,23 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
         $this->_schema = isset($schema) ? $schema : $class::schema();
         $this->_iterator = new QueryIterator($this->_query, array($this,'hydrate'));
         $this->_scopes = $class::scopes();
+    }
+
+    public function __clone(){
+      $this->_iterator = clone $this->_iterator;
+    }
+
+    public function restrictBy($r){
+      if (!$this->_readonly) {
+        $this->_iterator = new RestrictedQueryIterator($this->_query, array($this, 'hydrate'));
+        $this->_iterator->restrictBy($r);
+      }
+    }
+
+    public function restrictTo($r){
+      if ($this->_iterator instanceof RestrictedQueryIterator) {
+        $this->_iterator->restrictTo($r);
+      }
     }
 
     /**

@@ -208,6 +208,7 @@ class RestrictedQueryIterator extends QueryIterator implements \SeekableIterator
     {
         return !$this->_restricted()
             ? $this->_iterator->count()
-            : $this->_length;
+            // Must call _restrictedBeginning to make sure length is calculated
+            : ($this->_restrictedBeginning() && false ?: $this->_length);
     }
 }

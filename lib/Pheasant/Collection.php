@@ -57,11 +57,12 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
     public function hydrate($row)
     {
         $hydrated = $this->_schema->hydrate($row);
+        $alias = $this->_schema->alias();
 
         // apply any eager-loaded includes
         foreach($this->_includes as $prop=>$includer) {
-            $hydrated->override($prop, function($prop, $obj) use($includer) {
-                return $includer->get($obj, $prop);
+            $hydrated->override($prop, function($prop, $obj) use($includer, $alias) {
+                return $includer->get($obj, $prop, $alias);
             });
         }
 

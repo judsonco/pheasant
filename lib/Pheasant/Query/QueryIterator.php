@@ -38,6 +38,15 @@ class QueryIterator implements \SeekableIterator, \Countable
     }
 
     /**
+     * Get the hydrator currently used by the iterator
+     * @return closure|null
+     */
+    public function hydrator()
+    {
+        return $this->_hydrator;
+    }
+
+    /**
      * Add a callback to be called with the query before it's executed
      * @chainable
      */

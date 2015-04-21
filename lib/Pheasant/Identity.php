@@ -40,15 +40,18 @@ class Identity implements \IteratorAggregate
 
     public function __toString()
     {
-        $array = $this->toArray();
+        return static::identityStringFromParams($this->_class, $this->toArray());
+    }
 
+    static function identityStringFromParams($class, $params)
+    {
         $keyValues = array_map(
-            function ($k) use ($array) {
-                return sprintf('%s=%s', $k, $array[$k]);
+            function ($k) use ($params) {
+                return sprintf('%s=%s', $k, $params[$k]);
             },
-            array_keys($array)
+            array_keys($params)
         );
 
-        return sprintf('%s[%s]', $this->_class, implode(',', $keyValues));
+        return sprintf('%s[%s]', $class, implode(',', $keyValues));
     }
 }

@@ -98,6 +98,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      */
     public function filter($sql, $params=array(), $type = 'WHERE')
     {
+        $sql = str_replace('??', $this->_schema->alias().'.', $sql);
         switch(strtoupper($type)) {
             default:
             case 'WHERE':
@@ -127,7 +128,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      */
     public function orderBy($sql, $params=array())
     {
-        $this->_queryForWrite()->orderBy($sql, $params);
+        $this->_queryForWrite()->orderBy(str_replace('??', $this->_schema->alias().'.', $sql), $params);
 
         return $this;
     }
@@ -160,7 +161,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      */
     public function select($fields)
     {
-        $this->_queryForWrite()->select($fields);
+        $this->_queryForWrite()->select(str_replace('??', $this->_schema->alias().'.', $fields));
 
         return $this;
     }
@@ -348,6 +349,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
 
     public function aggregate($function, $fields=null)
     {
+        $fields = !$fields ? $fields : str_replace('??', $this->_schema->alias().'.', $fields);
         $query = clone $this->_query;
 
         return $query->select(sprintf('%s(%s)', $function, $fields))->execute()->scalar();

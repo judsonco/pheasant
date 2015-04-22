@@ -5,6 +5,10 @@ namespace Pheasant\Tests\Relationships;
 use \Pheasant\Tests\Examples\Hero;
 use \Pheasant\Tests\Examples\Power;
 use \Pheasant\Tests\Examples\SecretIdentity;
+use \Pheasant\Tests\Examples\User;
+use \Pheasant\Tests\Examples\Group;
+use \Pheasant\Tests\Examples\Membership;
+use \Pheasant\Tests\Examples\Comment;
 
 class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
 {
@@ -17,7 +21,22 @@ class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
             ->create('hero', Hero::schema())
             ->create('power', Power::schema())
             ->create('secretidentity', SecretIdentity::schema())
+            ->create('user', User::schema())
+            ->create('membership', Membership::schema())
+            ->create('group', Group::schema())
+            ->create('comment', Comment::schema())
             ;
+    }
+
+    public function testHasManyThroughWithDifferentNames()
+    {
+        $user = User::createHelper(
+          'Phat Pheasant', 'Birds Only', array('I am a pheasant', 'Are you a pheasant?'));
+
+        $group = $user->Groups->first();
+        $this->assertNotNull($group);
+
+        $this->assertCount(2, $group->Comments->toArray());
     }
 
     public function testOneToManyViaPropertySetting()
@@ -109,5 +128,15 @@ class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
         
         $this->setExpectedException('\Pheasant\Exception');
         $foo = $power->Hero;
+    }
+
+    public function testHasManyThroughRelationship()
+    {
+        $spiderman = Hero::createHelper('Spider Man', 'Peter Parker', array(
+            'Super-human Strength', 'Spider Senses'
+        ));
+
+        $identity = $spiderman->SecretIdentity->reload();
+        $this->assertCount(2, $identity->Powers);
     }
 }

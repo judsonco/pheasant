@@ -4,13 +4,14 @@ namespace Pheasant;
 
 class Relationship
 {
-    public $class, $local, $foreign;
+    public $alias, $class, $local, $foreign;
+    protected $_through, $_source;
 
-    public function __construct($class, $local, $foreign=null)
+    public function __construct($class, $local=null, $foreign=null)
     {
         $this->class = $class;
-        $this->local = $local;
-        $this->foreign = empty($foreign) ? $local : $foreign;
+        $this->local = is_array($local) ? $local : array($local);
+        $this->foreign = empty($foreign) ? $this->local : (is_array($foreign) ? $foreign : array($foreign));
     }
 
     public function get($object, $key)
@@ -130,10 +131,31 @@ class Relationship
         $remoteTable = $instance->mapperFor($rel->class)->table();
 
         $joinMethod = $joinType.'Join';
-        $queryString = array_map(function($local, $foreign)use($parentAlias, $alias){ return sprintf('`%s`.`%s`=`%s`.`%s`', $parentAlias, $local, $alias, $foreign); }, $rel->local, $rel->foreign);
+        $queryString = implode(' AND ', array_filter(array_map(
+          function ($local, $foreign) use ($parentAlias, $alias, $schema, $remoteSchema) {
+                /*
+                 * Because it's possible to have a relationship that depends on a computed
+                 * property of a DomainObject, we should make sure that the property exists
+                 * on the schema before trying to join on it.
+                 *
+                 * TODO: Possibly a better way to do this?
+                 */
+                if ($schema->hasAttribute($local) && $remoteSchema->hasAttribute($foreign)) {
+                    return sprintf('`%s`.`%s`=`%s`.`%s`',
+                        $parentAlias,
+                        $local,
+                        $alias,
+                        $foreign
+                      );
+                }
+            },
+            $rel->local,
+            $rel->foreign
+        )));
+
         $query->$joinMethod(
             $remoteTable->name()->table,
-            'ON '.implode(' AND ', $queryString),
+            'ON '.$queryString,
             $alias
         );
 
@@ -151,5 +173,176 @@ class Relationship
         $parts = explode(' ', $relName, 2);
 
         return isset($parts[1]) ? $parts : array($parts[0], $parts[0]);
+    }
+
+    public function through($through=null, $source=null){
+        if (!$through) {
+            return $this->_through;
+        } else {
+            if (!($this instanceof \Pheasant\Relationships\HasMany)) {
+                $class = get_class($this);
+                throw new \Pheasant\Exception("`Through` not supported on {$class}");
+            }
+
+            $this->_through = $through;
+            $this->_source  = $source ? $source : $through;
+
+            return $this;
+        }
+    }
+
+    public function source($source=null)
+    {
+        if (!$source) {
+            return $this->_source;
+        } else {
+            if (!($this instanceof \Pheasant\Relationships\HasMany)) {
+                $class = get_class($this);
+                throw new \Pheasant\Exception("`Through` not supported on {$class}");
+            }
+            $this->_source = $source;
+
+            return $this;
+        }
+    }
+
+    public function finalForObject($object){
+        if (!$this->through()) return $this;
+
+        $relationships = $object->schema()->relationships();
+        $final = $relationships[$this->through()];
+
+        while ($final->through()) {
+            # Select a new through relation
+            $final = $relationships[$final->through()];
+        }
+
+        return $final;
+    }
+
+    public static function joinsFor($object, $key)
+    {
+        $class = get_class($object);
+        $relationships = $class::schema()->relationships();
+        $final = $relationships[$key];
+
+        if (!$final->through()) return array();
+
+        $joins = $tmpJoins = array();
+        while ($final->through()) {
+            // The class of the source relationship
+            $sourceClass = $final->class;
+            // All the relationships of the source class
+            $sourceRels = $sourceClass::schema()->relationships();
+            // The source relationship
+            $sourceRel = $sourceRels[$final->source()];
+            // The name of the join
+            $sourceJoin = $final->source();
+
+            // While the source is a through relationship,
+            // we should continue to traverse the relationship
+            // graph until we find something we can join.
+            while ($sourceRel->through()) {
+                if (!$sourceRels[$sourceRel->through()]->through()) {
+                    $sourceJoin = $sourceRel->through();
+                    break;
+                }
+                $sourceRel = $sourceRels[$sourceRel->through()];
+            }
+
+            $tmpJoins []= $sourceJoin;
+            $final = $relationships[$final->through()];
+        }
+
+        # Build a graph of dependant joins
+        for ($i=count($tmpJoins); $i>0; $i--) $joins
+            ? $joins = array($tmpJoins[$i-1] => $joins)
+            : $joins []= $tmpJoins[$i-1];
+
+        return $joins;
+    }
+
+    protected function queryFor($object, $key, $params=array())
+    {
+        $class = $this->class;
+
+        $final = $this;
+        $alias = $final->alias;
+        if ($this->through()) {
+            // Make sure the alias is set on this relationship
+            $this->alias = $key;
+
+            // Create an array that will hold the join graph
+            $final = $this->finalForObject($object);
+            $joins = static::joinsFor($object, $key);
+
+            if ($joins) {
+                $alias = reset($joins);
+                while (is_array($alias)) {
+                    $alias = reset($alias);
+                }
+            }
+        }
+
+        if (!$params) {
+            $params = array_map(
+                function ($k) use ($object) {
+                    return $object->{$k};
+                },
+                $final->local
+            );
+        }
+
+        $queryString = array_map(
+            function ($foreign) use ($alias){
+                return (!empty($alias)
+                    ? "`{$alias}`."
+                    : "")."`{$foreign}`=?";
+            },
+            $final->foreign
+        );
+
+        $foreignCount = count($final->foreign);
+        // We test for this special case so that the generated sql
+        // uses `column IN (val,val) instead of `column=val or column=val`
+        $params = $foreignCount === 1 ? array($params) : $params;
+
+        $paramString = implode(
+            ' OR ',
+            array_fill(
+                0,
+                count($params)/$foreignCount,
+                implode(' AND ', $queryString)
+            )
+        );
+
+        if (!$this->through()) return $this->query($paramString, $params);
+
+        $query = \Pheasant::instance()
+            ->mapperFor(new $class)
+            ->query(
+                new \Pheasant\Query\Criteria($paramString, $params),
+                $this->alias
+            );
+
+        $schemaAlias = $this->alias
+            ? $this->alias
+            : $object->schema()->alias();
+
+        $joinType = 'inner';
+        foreach (Relationship::normalizeMap($joins) as $alias => $nested) {
+            Relationship::addJoin($query,
+                $schemaAlias, $class::schema(), $alias, $nested, $joinType);
+        }
+
+        return $query;
+    }
+
+    public function collectionFor($object, $key, $params=array())
+    {
+        $class = $this->class;
+        $schema = clone $class::schema();
+
+        return new Collection($this->class, $this->queryFor($object, $key, $params), $this->adder($object), $schema->setAlias($key));
     }
 }

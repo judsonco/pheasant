@@ -13,7 +13,7 @@ class HasMany extends Relationship
     /**
      * Constructor
      */
-    public function __construct($class, $local, $foreign=null)
+    public function __construct($class, $local=null, $foreign=null)
     {
         parent::__construct($class, $local, $foreign);
     }
@@ -23,10 +23,8 @@ class HasMany extends Relationship
      */
     public function get($object, $key, $cache=null)
     {
-        $query = $this->query(
-            "{$this->foreign}=?", $object->get($this->local));
 
-        return new Collection($this->class, $query, $this->adder($object));
+        return $this->collectionFor($object, $key);
     }
 
     /* (non-phpdoc)
@@ -34,11 +32,20 @@ class HasMany extends Relationship
      */
     public function add($object, $value)
     {
-        $newValue = $object->{$this->local};
+        $savedAfter = false;
+        array_map(
+            function ($local, $foreign) use (&$object, &$value) {
+                $newValue = $object->{$local};
 
-        if($newValue instanceof PropertyReference)
-            $value->saveAfter($object);
+                if($newValue instanceof PropertyReference && !$savedAfter){
+                    $savedAfter = true;
+                    $value->saveAfter($object);
+                }
 
-        $value->set($this->foreign, $newValue);
+                $value->set($foreign, $newValue);
+            },
+            $this->local,
+            $this->foreign
+        );
     }
 }

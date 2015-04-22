@@ -7,21 +7,21 @@ use \Pheasant\Types;
 use \Pheasant\Types\SequenceType;
 use \Pheasant\Types\StringType;
 
-class SecretIdentity extends DomainObject
+class Comment extends DomainObject
 {
     public function properties()
     {
         return array(
             'id' => new Types\SequenceType(),
-            'realname' => new Types\StringType(),
+            'text' => new Types\StringType(),
+            'user_id' => new Types\IntegerType(),
             );
     }
 
     public function relationships()
     {
         return array(
-            'Hero' => Hero::hasOne('id', 'identityid'),
-            'Powers' => Power::hasMany()->through('Hero'),
+            'User' => User::belongsTo('user_id','userid'),
             );
     }
 }

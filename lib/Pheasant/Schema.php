@@ -8,6 +8,7 @@ namespace Pheasant;
 class Schema
 {
     private
+        $_alias,
         $_class,
         $_props=array(),
         $_rels=array(),
@@ -48,9 +49,22 @@ class Schema
      */
     public function alias()
     {
-        $fragments = explode("\\", str_replace('_', '\\', $this->_class));
+        if(!isset($this->_alias)){
+          $fragments = explode("\\", str_replace('_', '\\', $this->_class));
+          $this->_alias = end($fragments);
+        }
 
-        return end($fragments);
+        return $this->_alias;
+    }
+
+    /**
+     * Set a custom short alias for the object to be used in queries
+     */
+    public function setAlias($val)
+    {
+        $this->_alias = $val;
+
+        return $this;
     }
 
     /**

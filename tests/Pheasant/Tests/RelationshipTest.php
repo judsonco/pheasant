@@ -131,12 +131,12 @@ class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
 
         $this->assertNull($hero->SecretIdentity);
     }
-    
+
     public function testEmptyRelationshipsWithoutAllowEmpty()
     {
         $power = new Power(array('description'=>'Spider Senses'));
         $power->save();
-        
+
         $this->setExpectedException('\Pheasant\Exception');
         $foo = $power->Hero;
     }

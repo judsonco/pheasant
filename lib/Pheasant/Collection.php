@@ -98,6 +98,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      */
     public function filter($sql, $params=array(), $type = 'WHERE')
     {
+        $sql = str_replace('??', $this->_schema->alias().'.', $sql);
         switch(strtoupper($type)) {
             default:
             case 'WHERE':
@@ -160,7 +161,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      */
     public function select($fields)
     {
-        $this->_queryForWrite()->select($fields);
+        $this->_queryForWrite()->select(str_replace('??', $this->_schema->alias().'.', $fields));
 
         return $this;
     }

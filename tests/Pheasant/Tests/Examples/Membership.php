@@ -7,21 +7,22 @@ use \Pheasant\Types;
 use \Pheasant\Types\Sequence;
 use \Pheasant\Types\String;
 
-class SecretIdentity extends DomainObject
+class Membership extends DomainObject
 {
     public function properties()
     {
         return array(
             'id' => new Types\Sequence(),
-            'realname' => new Types\String(),
+            'group_id' => new Types\Integer(),
+            'user_id' => new Types\Integer(),
             );
     }
 
     public function relationships()
     {
         return array(
-            'Hero' => Hero::hasOne('id', 'identityid'),
-            'Powers' => Power::hasMany()->through('Hero'),
+            'User' => User::belongsTo('user_id','userid'),
+            'Group' => Group::belongsTo('group_id','id'),
             );
     }
 }

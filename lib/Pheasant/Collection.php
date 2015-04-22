@@ -22,12 +22,13 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      * @param $class string the classname to hydrate
      * @param $query Query the query object
      * @param $add Closure a closure to call when an object is appended
+     * @param $schema custom schema to use
      */
-    public function __construct($class, $query, $add=false)
+    public function __construct($class, $query, $add=false, $schema=null)
     {
         $this->_query = $query;
         $this->_add = $add;
-        $this->_schema = $schema = $class::schema();
+        $this->_schema = isset($schema) ? $schema : $class::schema();
         $this->_iterator = new QueryIterator($this->_query, array($this,'hydrate'));
         $this->_scopes = $class::scopes();
     }

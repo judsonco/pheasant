@@ -29,14 +29,17 @@ class Includer
     public function loadCache()
     {
         $this->_cache = new ArrayCache();
+        $rel = $this->_rel;
+        $columnString = array_map(function($l)use($rel){ return (!empty($rel->alias)?$rel->alias.'.':'').$l; }, $this->_rel->local);
         $ids = iterator_to_array(
-            $this->_query->select('DISTINCT '.$this->_rel->local)->execute()->column()
+            $this->_query->select(implode(',', $columnString))->groupBy(implode(',', $columnString))->execute()->column()
         );
 
+        $queryString = array_map(function($f)use($rel){ return $f.'=?'; }, $this->_rel->foreign);
         $relatedObjects = \Pheasant::instance()
             ->finderFor($this->_rel->class)
             ->find($this->_rel->class, new Criteria(
-                $this->_rel->foreign.'=?', array($ids))
+                implode(' AND ', $queryString), array($ids))
             )
             ->includes($this->_nested);
 

@@ -32,26 +32,32 @@ class BelongsTo extends Relationship
         if ($cache) {
             $schema = \Pheasant::instance()->schema($this->class);
 
-            if ($cached = $cache->get($schema->hash($object, array(array($this->local, $this->foreign))))) {
+            if ($cached = $cache->get(
+                $schema->hash($object, array_map(
+                  function ($l, $f) {
+                      return array($l, $f);
+                  },
+                  $this->local,
+                  $this->foreign
+                ))
+            )) {
                 return $cached;
             }
         }
 
-        if (($localValue = $object->{$this->local}) === null) {
-            if($this->_allowEmpty) {
-                return null;
-            } else {
-                throw new \Pheasant\Exception("Local value is null while not allowed");
-            }
+        $result = array();
+        if($query = $this->queryFor($object, $key)){
+            $result = $query->execute();
         }
-
-        $result = $this->query("{$this->foreign}=?", $localValue)->execute();
 
         if(!count($result)) {
             if($this->_allowEmpty) {
                 return null;
             } else {
-                throw new \Pheasant\Exception("Failed to find a {$key} (via {$this->foreign}={$localValue})");
+                $foreign = '['.implode(',', $this->foreign).']';
+                $local = '['.implode(',', $this->local).']';
+
+                throw new \Pheasant\Exception("Failed to find a {$key} (via {$foreign}={$local}");
             }
         }
 
@@ -63,6 +69,8 @@ class BelongsTo extends Relationship
      */
     public function set($object, $key, $value)
     {
-        $object->set($this->local, $value->{$this->foreign});
+        for ($i=0,$c=count($this->local);$i<$c;$i++) {
+            $object->set($this->local[$i], $value->{$this->foreign[$i]});
+        }
     }
 }

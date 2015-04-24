@@ -115,7 +115,7 @@ class Relationship
      * takes a nested list of relationships that will be recursively joined as needed.
      * @return void
      */
-    public static function addJoin($query, $parentAlias, $schema, $relName, $nested=array(), $joinType='inner')
+    public static function addJoin($query, $parentAlias, $schema, $relName, $nested=array(), $joinType='inner', $ons='')
     {
         if (!in_array($joinType, array('inner','left','right'))) {
             throw new \InvalidArgumentException("Unsupported join type: $joinType");
@@ -123,6 +123,9 @@ class Relationship
 
         list($relName, $alias) = self::parseRelName($relName);
         $rel = $schema->relationship($relName);
+
+        // TODO: Figure out a better place to do this
+        $on = str_replace('??', $parentAlias, is_array($ons) ? array_shift($ons) : $ons);
 
         // look up schema and table for both sides of join
         $instance = \Pheasant::instance();
@@ -155,12 +158,12 @@ class Relationship
 
         $query->$joinMethod(
             $remoteTable->name()->table,
-            'ON '.$queryString,
+            'ON '.$queryString.($on ? ' AND '.$on : ''),
             $alias
         );
 
         foreach (self::normalizeMap($nested) as $relName=>$nested) {
-            self::addJoin($query, $alias, $remoteSchema, $relName, $nested, $joinType);
+            self::addJoin($query, $alias, $remoteSchema, $relName, $nested, $joinType, $ons);
         }
     }
 

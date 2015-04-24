@@ -311,13 +311,13 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
      * is either a flat array of relationships (as defined in the object's schema) or a nested array
      * @chainable
      */
-    public function join($rels, $joinType='inner')
+    public function join($rels, $joinType='inner', $on='')
     {
         $schemaAlias = $this->_schema->alias();
 
         foreach (Relationship::normalizeMap($rels) as $alias=>$nested) {
             Relationship::addJoin($this->_queryForWrite(),
-                $schemaAlias, $this->_schema, $alias, $nested, $joinType);
+                $schemaAlias, $this->_schema, $alias, $nested, $joinType, $on);
         }
 
         return $this;

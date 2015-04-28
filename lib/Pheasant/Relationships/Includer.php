@@ -30,8 +30,7 @@ class Includer
     public function loadCache($object, $key, $alias)
     {
         $this->_cache = new ArrayCache();
-        $rel = $this->_rel->finalForObject($object);
-
+        $rel = clone $this->_rel->finalForObject($object);
 
         $aliasedQueryString = implode(',',
             array_map(

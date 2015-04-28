@@ -28,6 +28,17 @@ class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
             ;
     }
 
+    public function testHasOneThrough()
+    {
+        $spiderman = Hero::createHelper('Spider Man', 'Peter Parker', array(
+            'Super-human Strength', 'Spider Senses'
+        ));
+
+        $powers = $spiderman->Powers->toArray();
+        $this->assertNotNull($powers[0]);
+        $this->assertEquals('Peter Parker', $powers[0]->SecretIdentity->realname);
+    }
+
     public function testHasManyThroughWithDifferentNames()
     {
         $user = User::createHelper(

@@ -179,7 +179,8 @@ class Relationship
         if (!$through) {
             return $this->_through;
         } else {
-            if (!($this instanceof \Pheasant\Relationships\HasMany)) {
+            if (!($this instanceof \Pheasant\Relationships\HasMany ||
+                  $this instanceof \Pheasant\Relationships\HasOne)) {
                 $class = get_class($this);
                 throw new \Pheasant\Exception("`Through` not supported on {$class}");
             }
@@ -196,7 +197,8 @@ class Relationship
         if (!$source) {
             return $this->_source;
         } else {
-            if (!($this instanceof \Pheasant\Relationships\HasMany)) {
+            if (!($this instanceof \Pheasant\Relationships\HasMany ||
+                  $this instanceof \Pheasant\Relationships\HasOne)) {
                 $class = get_class($this);
                 throw new \Pheasant\Exception("`Through` not supported on {$class}");
             }
@@ -211,10 +213,13 @@ class Relationship
 
         $relationships = $object->schema()->relationships();
         $final = $relationships[$this->through()];
+        $final->alias = $this->through();
 
         while ($final->through()) {
             # Select a new through relation
+            $alias = $final->through();
             $final = $relationships[$final->through()];
+            $final->alias = $alias;
         }
 
         return $final;
@@ -284,6 +289,10 @@ class Relationship
             }
         }
 
+        // If there still isn't an alias, then we should use the
+        // key as an alias.
+        $alias = $alias ? $alias : $key;
+
         if (!$params) {
             $params = array_map(
                 function ($k) use ($object) {
@@ -316,14 +325,17 @@ class Relationship
             )
         );
 
-        if (!$this->through()) return $this->query($paramString, $params);
+        $mapper = \Pheasant::instance()
+            ->mapperFor(new $class);
 
-        $query = \Pheasant::instance()
-            ->mapperFor(new $class)
-            ->query(
+        if (!$this->through()) {
+            return $mapper->query(
+                new \Pheasant\Query\Criteria($paramString, $params), $alias);
+        } else {
+            $query = $mapper->query(
                 new \Pheasant\Query\Criteria($paramString, $params),
-                $this->alias
-            );
+                $this->alias); // Use the through alias ($this->alias)
+        }
 
         $schemaAlias = $this->alias
             ? $this->alias

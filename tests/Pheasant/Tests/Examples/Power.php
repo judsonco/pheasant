@@ -21,7 +21,8 @@ class Power extends DomainObject
     public function relationships()
     {
         return array(
-            'Hero' => Hero::belongsTo('heroid','id')
+            'Hero' => Hero::belongsTo('heroid','id'),
+            'SecretIdentity' => SecretIdentity::hasOne()->through('Hero', 'Powers'),
             );
     }
 }

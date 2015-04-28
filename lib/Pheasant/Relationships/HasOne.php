@@ -20,7 +20,7 @@ class HasOne extends Relationship
     /**
      * Constructor
      */
-    public function __construct($class, $local, $foreign=null, $allowEmpty=false)
+    public function __construct($class, $local=null, $foreign=null, $allowEmpty=false)
     {
         parent::__construct($class, $local, $foreign);
         $this->_allowEmpty = $allowEmpty;
@@ -66,41 +66,6 @@ class HasOne extends Relationship
         }
 
         return $this->hydrate($result->row());
-    }
-
-    protected function queryFor($object, $key, $params=array())
-    {
-        if (!$params) {
-            $params = array_map(
-                function ($local) use (&$hasNull, &$object) {
-                    return $object->{$local};
-                },
-                $this->local
-            );
-        }
-
-        $foreignCount = count($this->foreign);
-        // We test for this special case so that the generated sql
-        // uses `column IN (val,val) instead of `column=val or column=val`
-        $params = $foreignCount === 1 ? array($params) : $params;
-
-        $queryString = array_map(
-            function ($foreign) {
-                return "{$foreign}=?";
-            },
-            $this->foreign
-        );
-
-        $paramString = implode(
-            ' OR ',
-            array_fill(
-                0,
-                count($params)/$foreignCount,
-                implode(' AND ', $queryString)
-            )
-        );
-
-        return $this->query($paramString, $params);
     }
 
     /* (non-phpdoc)

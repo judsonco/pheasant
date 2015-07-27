@@ -368,6 +368,7 @@ class Collection implements \IteratorAggregate, \Countable, \ArrayAccess
 
     public function aggregate($function, $fields=null)
     {
+        $fields = !$fields ? $fields : str_replace('??', $this->_schema->alias().'.', $fields);
         $query = clone $this->_query;
 
         return $query->select(sprintf('%s(%s)', $function, $fields))->execute()->scalar();

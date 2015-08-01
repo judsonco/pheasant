@@ -5,7 +5,7 @@ namespace Pheasant\Tests\Examples;
 use \Pheasant\DomainObject;
 use \Pheasant\Types;
 use \Pheasant\Types\Sequence;
-use \Pheasant\Types\String;
+use \Pheasant\Types\StringType;
 
 class User extends DomainObject
 {
@@ -13,9 +13,9 @@ class User extends DomainObject
     {
         return array(
             'userid' => new Types\Sequence(),
-            'firstname' => new Types\String(),
-            'lastname' => new Types\String(),
-            'group' => new Types\String(),
+            'firstname' => new Types\StringType(),
+            'lastname' => new Types\StringType(),
+            'group' => new Types\StringType(),
             );
     }
 

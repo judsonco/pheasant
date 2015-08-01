@@ -7,7 +7,7 @@ use \Pheasant\Database\TypedValue;
 /**
  * A basic integer type
  */
-class Integer extends Base
+class IntegerType extends Base
 {
     public $width;
 

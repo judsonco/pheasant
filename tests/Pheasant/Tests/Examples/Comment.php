@@ -5,7 +5,7 @@ namespace Pheasant\Tests\Examples;
 use \Pheasant\DomainObject;
 use \Pheasant\Types;
 use \Pheasant\Types\Sequence;
-use \Pheasant\Types\String;
+use \Pheasant\Types\StringType;
 
 class Comment extends DomainObject
 {
@@ -13,8 +13,8 @@ class Comment extends DomainObject
     {
         return array(
             'id' => new Types\Sequence(),
-            'text' => new Types\String(),
-            'user_id' => new Types\Integer(),
+            'text' => new Types\StringType(),
+            'user_id' => new Types\IntegerType(),
             );
     }
 

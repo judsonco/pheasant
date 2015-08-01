@@ -5,7 +5,7 @@ namespace Pheasant\Tests\Examples;
 use \Pheasant\DomainObject;
 use \Pheasant\Types;
 use \Pheasant\Types\Sequence;
-use \Pheasant\Types\String;
+use \Pheasant\Types\StringType;
 
 class Power extends DomainObject
 {
@@ -13,8 +13,8 @@ class Power extends DomainObject
     {
         return array(
             'id' => new Types\Sequence(),
-            'description' => new Types\String(),
-            'heroid' => new Types\Integer()
+            'description' => new Types\StringType(),
+            'heroid' => new Types\IntegerType()
             );
     }
 

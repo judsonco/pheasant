@@ -8,10 +8,10 @@ class TypesTest extends \Pheasant\Tests\MysqlTestCase
 {
     public function testInteger()
     {
-        $type = new Types\Integer(10);
+        $type = new Types\IntegerType(10);
         $this->assertMysqlColumnSql('`test` int(10)', $type);
 
-        $type = new Types\Integer();
+        $type = new Types\IntegerType();
         $this->assertMysqlColumnSql('`test` int', $type);
     }
 
@@ -35,7 +35,7 @@ class TypesTest extends \Pheasant\Tests\MysqlTestCase
 
     public function testIntegerPrimaryNotNull()
     {
-        $type = new Types\Integer(10, 'notnull primary');
+        $type = new Types\IntegerType(10, 'notnull primary');
 
         $this->assertTrue($type->options()->notnull);
         $this->assertTrue($type->options()->primary);
@@ -68,29 +68,29 @@ class TypesTest extends \Pheasant\Tests\MysqlTestCase
 
     public function testString()
     {
-        $type = new Types\String(255);
+        $type = new Types\StringType(255);
         $this->assertMysqlColumnSql('`test` varchar(255)', $type);
 
-        $type = new Types\String(65000);
+        $type = new Types\StringType(65000);
         $this->assertMysqlColumnSql('`test` text', $type);
 
-        $type = new Types\String(10000000);
+        $type = new Types\StringType(10000000);
         $this->assertMysqlColumnSql('`test` mediumtext', $type);
 
-        $type = new Types\String(100000000);
+        $type = new Types\StringType(100000000);
         $this->assertMysqlColumnSql('`test` longtext', $type);
 
 
-        $type = new Types\String(65000, 'required');
+        $type = new Types\StringType(65000, 'required');
         $this->assertMysqlColumnSql('`test` text not null', $type);
     }
 
     public function testBoolean()
     {
-        $type = new Types\Boolean();
+        $type = new Types\BooleanType();
         $this->assertMysqlColumnSql('`test` boolean', $type);
 
-        $type = new Types\Boolean('notnull');
+        $type = new Types\BooleanType('notnull');
         $this->assertMysqlColumnSql('`test` boolean not null', $type);
     }
 

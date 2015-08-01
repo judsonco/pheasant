@@ -7,7 +7,7 @@ use \Pheasant\Database\TypedValue;
 /**
  * A basic string type
  */
-class Boolean extends Base
+class BooleanType extends Base
 {
     /* (non-phpdoc)
      * @see \Pheasant\Type::columnSql

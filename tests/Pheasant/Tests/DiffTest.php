@@ -16,8 +16,8 @@ class DiffTest extends \Pheasant\Tests\MysqlTestCase
         $this->initialize('Pheasant\DomainObject', function($builder, $pheasant) {
             $builder->properties(array(
                 'id' => new Types\Sequence(),
-                'type' => new Types\String(128),
-                'isllama' => new Types\Boolean(array('default'=>true)),
+                'type' => new Types\StringType(128),
+                'isllama' => new Types\BooleanType(array('default'=>true)),
                 'timecreated' => new Types\DateTime(),
                 'unixtime' => new Types\UnixTimestamp(),
             ));

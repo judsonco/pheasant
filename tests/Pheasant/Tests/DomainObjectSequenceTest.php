@@ -3,7 +3,7 @@
 namespace Pheasant\Tests;
 
 use \Pheasant\Types\Sequence;
-use \Pheasant\Types\String;
+use \Pheasant\Types\StringType;
 use \Pheasant\Tests\Examples\Person;
 
 class DomainObjectSequenceTest extends \Pheasant\Tests\MysqlTestCase
@@ -14,7 +14,7 @@ class DomainObjectSequenceTest extends \Pheasant\Tests\MysqlTestCase
 
         $table = $this->table('person', array(
             'personid' => new Sequence(),
-            'name' => new String(),
+            'name' => new StringType(),
             ));
     }
 

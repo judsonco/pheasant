@@ -43,6 +43,8 @@ class JoinTest extends \Pheasant\Tests\MysqlTestCase
 
     public function testBasicJoiningBringsInAllColumns()
     {
+        $this->markTestSkipped('Joining should not alter returned data.');
+
         $collection = Hero::all()->join(array('Powers', 'SecretIdentity'));
         $objects = iterator_to_array($collection);
 

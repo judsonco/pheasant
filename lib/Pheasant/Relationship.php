@@ -344,6 +344,15 @@ class Relationship
             ? $this->alias
             : $object->schema()->alias();
 
+        # Select the row we're looking for, and foreign keys
+        # TODO: Alias foreign keys
+        $query->select(
+          "{$schemaAlias}.*, ".
+          implode(',', array_map(function($k) use($alias){
+            return "`{$alias}`.`{$k}`";
+          }, $final->foreign))
+        );
+
         $joinType = 'inner';
         foreach (Relationship::normalizeMap($joins) as $alias => $nested) {
             Relationship::addJoin($query,

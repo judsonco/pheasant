@@ -349,7 +349,7 @@ class Relationship
         $query->select(
           "`{$schemaAlias}`.*, ".
           implode(',', array_map(function($k) use($alias){
-            return "`{$alias}`.`{$k}`";
+            return "`{$alias}`.`{$k}` as `{$k}_foreign`";
           }, $final->foreign))
         );
 

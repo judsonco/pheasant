@@ -31,6 +31,7 @@ class Includer
     {
         $this->_cache = new ArrayCache();
         $rel = clone $this->_rel->finalForObject($object);
+        $is_through = !!$this->_rel->through();
 
         $aliasedQueryString = implode(',',
             array_map(
@@ -61,8 +62,8 @@ class Includer
         } else {
             $relatedObjects->restrictBy(
                 array_map(
-                    function ($local, $foreign) {
-                        return array($local, $foreign);
+                    function ($local, $foreign) use($is_through) {
+                        return array($local, $foreign . ($is_through ? '_foreign':''));
                     },
                     $rel->local,
                     $rel->foreign

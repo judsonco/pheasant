@@ -5,6 +5,7 @@ namespace Pheasant\Relationships;
 use \Pheasant\Collection;
 use \Pheasant\Relationship;
 use \Pheasant\Identity;
+use \Pheasant\PropertyReference;
 
 /**
  * A HasMany relationship represents a 1 to N relationship.
@@ -55,12 +56,12 @@ class HasMany extends Relationship
     {
         $savedAfter = false;
         array_map(
-            function ($local, $foreign) use (&$object, &$value) {
+            function ($local, $foreign) use ($object, $value, &$savedAfter) {
                 $newValue = $object->{$local};
 
                 if($newValue instanceof PropertyReference && !$savedAfter){
                     $savedAfter = true;
-                    $value->saveAfter($object);
+                    $object->saveAfter($value);
                 }
 
                 $value->set($foreign, $newValue);

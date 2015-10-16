@@ -83,7 +83,12 @@ class Relationship
         $rel = $this;
 
         return function($object, $value) use ($key, $rel) {
-            return $rel->set($object, $key, $value);
+            if($rel instanceof \Pheasant\Relationships\HasMany){
+                if(!is_array($value)) $value = array($value);
+                foreach($value as $v) $rel->add($object, $v);
+            } else {
+                return $rel->set($object, $key, $value);
+            }
         };
     }
 

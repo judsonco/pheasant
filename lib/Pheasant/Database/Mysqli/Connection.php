@@ -55,36 +55,31 @@ class Connection
         // Keep a copy of ourselves around
         $self = $this;
 
-        // The beforeTransaction event is where we will BEGIN or SAVEPOINT
-        $this->_events->register('beforeTransaction', function() use($self) {
-            // if `descend` returns null, there is nothing on the stack
-            // so we should BEGIN a transaction instead of a numbered SAVEPOINT.
-            $savepoint = $self->savePointStack()->descend();
-            $self->execute($savepoint === null ? "BEGIN" : "SAVEPOINT {$savepoint}");
-        });
+        foreach(array(
+          'beforeTransaction' => array(1, 'TransactionEnter', 'SavePointEnter', 'BEGIN', 'SAVEPOINT'),
+          'afterTransaction'  => array(0, 'Commit', 'SavePointExit', 'COMMIT', 'RELEASE SAVEPOINT'),
+          'rollback'          => array(0, 'Rollback', 'RollbackToSavePoint', 'ROLLBACK', 'ROLLBACK TO'),
+        ) as $event => $options) {
+            // The afterTransaction replaces commitTransaction, and is where
+            // we will COMMIT or RELEASE
+            $this->_events->register($event, function() use($self, $event, $options) {
+                list($descend, $null_stack_event, $non_null_stack_event, $null_stack_sql, $non_null_stack_sql) = $options;
 
-        // The afterTransaction replaces commitTransaction, and is where
-        // we will COMMIT or RELEASE
-        $this->_events->register('afterTransaction', function() use($self) {
-            // if `pop` returns null, then the stack is now empty
-            // so we should COMMIT instead of RELEASE.
-            $savepoint = $self->savePointStack()->pop();
+                // if `pop` returns null, then the stack is now empty
+                // so we should COMMIT instead of RELEASE.
+                $savepoint = $self->savePointStack()->peek();
 
-            // If the savepoint is null, then we are committing the
-            // transaction, and should fire the appropriate events.
-            $callback_name = $savepoint === null ? 'Commit' : 'SavePoint';
-            $self->events()->wrap($callback_name, $self, function($self) use($savepoint) {
-                $self->execute($savepoint === null ? "COMMIT" : "RELEASE SAVEPOINT {$savepoint}");
+                // If the savepoint is null, then we are committing the
+                // transaction, and should fire the appropriate events.
+                $callback_name = $savepoint === null ? $null_stack_event : "{$non_null_stack_event}-{$savepoint}";
+
+                $self->events()->wrap($callback_name, $self, function($self) use($descend, $null_stack_sql, $non_null_stack_sql){
+                    # If there are items on the stack, pop one off, otherwise treat as null
+                    $savepoint = $descend ? $self->savePointStack()->descend() : $self->savePointStack()->pop();
+                    $self->execute($savepoint === null ? $null_stack_sql : "{$non_null_stack_sql} {$savepoint}");
+                });
             });
-        });
-
-        // The rollbackTransaction event is fired when we need to ROLLBACK
-        $this->_events->register('rollback', function() use($self) {
-            // if `pop` returns null, then the stack is now empty
-            // so we should ROLLBACK instead of ROLLBACK_TO.
-            $savepoint = $self->savePointStack()->pop();
-            $self->execute($savepoint === null ? "ROLLBACK" : "ROLLBACK TO {$savepoint}");
-        });
+        }
     }
 
     /**

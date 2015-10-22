@@ -104,7 +104,12 @@ class DomainObject implements \ArrayAccess
             );
         };
 
-        \Pheasant::transaction($closure);
+        $transaction = \Pheasant::transaction($closure, false);
+        $transaction->afterRollabck(function() use($self, $wasCreate){
+            $self->trigger('afterRollback', $self);
+            $self->trigger($wasCreate ? 'afterRollbackOnCreate' : 'afterRollbackOnUpdate', $self);
+        });
+        $transaction->execute();
 
         # Simulate a hydrate event on creation
         if($wasCreate) $this->events()->trigger('afterHydrate', $this);
@@ -167,7 +172,12 @@ class DomainObject implements \ArrayAccess
             );
         };
 
-        \Pheasant::transaction($closure);
+        $transaction = \Pheasant::transaction($closure, false);
+        $transaction->afterRollabck(function() use($self){
+            $self->trigger('afterRollback', $self);
+            $self->trigger('afterRollbackOnDelete', $self);
+        });
+        $transaction->execute();
 
         return $this;
     }

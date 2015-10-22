@@ -9,7 +9,8 @@ class Transaction
 {
     private
         $_connection,
-        $_events
+        $_events,
+        $_afterRollbackCallbacks = array()
         ;
 
     public $results;
@@ -26,17 +27,39 @@ class Transaction
     public function execute()
     {
         $this->results = array();
-
         try {
             $this->_events->wrap('Transaction', $this, function($self) {
               $self->events()->trigger('transaction', $self->connection());
             });
         } catch (\Exception $e) {
-            $this->_events->trigger('rollback', $this->_connection);
+            $this->_events->trigger('rollback', $this->connection());
             throw $e;
         }
 
         return $this->results;
+    }
+
+    /**
+     * Get the current SavePointStack element
+     * @return string|null
+     */
+    public function currentSavepoint(){
+      return $this->connection()->savePointStack()->peek();
+    }
+
+    /**
+     * Bind closure to specified event on the current savepoint
+     * @chainable
+     */
+    public function afterRollabck(\Closure $closure){
+        $this->_events->register('beforeTransaction', function($e, $self) use($closure) {
+            $savepoint = $self->currentSavepoint();
+            $self->events()->register($savepoint === null
+                ? 'afterRollback'
+                : "afterRollbackToSavePoint-{$savepoint}", $closure);
+        });
+
+        return $this;
     }
 
     /**

@@ -82,5 +82,7 @@ class HasOne extends Relationship
 
             $value->set($this->foreign[$i], $newValue);
         }
+
+        if(!$savedAfter) if(!$value->isSaved()) $value->save();
     }
 }

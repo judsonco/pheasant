@@ -408,7 +408,7 @@ class DomainObject implements \ArrayAccess
     {
         if (preg_match('/^(find|all$|byId$|one)/',$method)) {
             return Finder\Wizard::fromClass(get_called_class())->dispatch($method, $params);
-        } elseif (preg_match('/^(hasOne|hasMany|belongsTo)$/',$method)) {
+        } elseif (preg_match('/^(hasOne|hasMany|belongsTo|morphTo|morphMany)$/',$method)) {
             $refl = new \ReflectionClass('\Pheasant\\Relationships\\'.ucfirst($method));
             array_unshift($params, get_called_class());
 

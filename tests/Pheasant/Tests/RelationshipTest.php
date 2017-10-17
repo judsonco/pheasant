@@ -9,6 +9,9 @@ use \Pheasant\Tests\Examples\User;
 use \Pheasant\Tests\Examples\Group;
 use \Pheasant\Tests\Examples\Membership;
 use \Pheasant\Tests\Examples\Comment;
+use \Pheasant\Tests\Examples\Album;
+use \Pheasant\Tests\Examples\Article;
+use \Pheasant\Tests\Examples\Image;
 
 class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
 {
@@ -25,6 +28,9 @@ class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
             ->create('membership', Membership::schema())
             ->create('group', Group::schema())
             ->create('comment', Comment::schema())
+            ->create('album', Album::schema())
+            ->create('article', Article::schema())
+            ->create('image', Image::schema())
             ;
     }
 
@@ -149,5 +155,44 @@ class RelationshipTest extends \Pheasant\Tests\MysqlTestCase
 
         $identity = $spiderman->SecretIdentity->reload();
         $this->assertCount(2, $identity->Powers);
+    }
+
+    public function testPolymorphicRelationships()
+    {
+        $album = Album::create(['title' => 'Italy Trip']);
+
+        $colliseum_image = Image::create([
+            'comment' => 'Roman Colliseum',
+            'attachable_id' => $album->id,
+            'attachable_type' => Album::class,
+        ]);
+
+        $venice_image = Image::create([
+            'comment' => 'Venice Canals',
+            'attachable_id' => $album->id,
+            'attachable_type' => Album::class,
+        ]);
+
+        $this->assertCount(2, $album->images);
+        $this->assertInstanceOf(Album::class, $colliseum_image->attachable);
+        $this->assertInstanceOf(Album::class, $venice_image->attachable);
+
+        $article = Article::create(['title' => 'Desserts To Die For']);
+
+        $ketogenic_cookies_and_creme_icecream = Image::create([
+            'comment' => 'Ketogenic Cookies and Cremè Ice Cream',
+            'attachable_id' => $article->id,
+            'attachable_type' => Article::class,
+        ]);
+
+        $apple_cider_punch_pie = Image::create([
+            'comment' => 'Apple Cider Punch Pie',
+            'attachable_id' => $article->id,
+            'attachable_type' => Article::class,
+        ]);
+
+        $this->assertCount(2, $article->images);
+        $this->assertInstanceOf(Article::class, $ketogenic_cookies_and_creme_icecream->attachable);
+        $this->assertInstanceOf(Article::class, $apple_cider_punch_pie->attachable);
     }
 }

@@ -103,6 +103,12 @@ class TypesTest extends \Pheasant\Tests\MysqlTestCase
         $this->assertMysqlColumnSql("`test` set('foo','bar') not null", $type);
     }
 
+    public function testEnum()
+    {
+        $type = new Types\EnumType(array('open', 'closed'));
+        $this->assertMysqlColumnSql("`test` enum('open','closed')", $type);
+    }
+
     public function assertMysqlColumnSql($sql, $type)
     {
         $this->assertEquals($type->columnSql('test', new \Pheasant\Database\MysqlPlatform()), $sql);

@@ -23,6 +23,7 @@ class TypeMarshallingTest extends \Pheasant\Tests\MysqlTestCase
                 'timecreated' => new Types\DateTimeType(),
                 'unixtime' => new Types\UnixTimestampType(),
                 'camelidvariant' => new Types\StringType(128, array('allowed'=>array('llama', 'alpaca'))),
+                'isdomestic' => new Types\EnumType(array('yes', 'no')),
             ));
         });
 
@@ -137,5 +138,58 @@ class TypeMarshallingTest extends \Pheasant\Tests\MysqlTestCase
         $object->weight = null;
 
         $this->assertSame($object->weight, null);
+    }
+
+    public function testEnumTypesAreUnmarshalled()
+    {
+        $object = new DomainObject(array('isdomestic' => 'yes'));
+        $object->save();
+
+        $llamaById = DomainObject::byId(1);
+
+        $this->assertEquals($llamaById->isdomestic, 'yes');
+    }
+
+    public function testEnumIndexesAreAllowedInsertValues()
+    {
+        $object = new DomainObject(array('isdomestic' => 1));
+        $object->save();
+
+        $llamaById = DomainObject::byId(1);
+
+        $this->assertEquals($llamaById->isdomestic, 'yes');
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testEnumTypesValuesEnforced()
+    {
+        $object = new DomainObject(array('isdomestic' => 'maybe'));
+        $object->save();
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testEnumTypesIndexValuesEnforced()
+    {
+        $object = new DomainObject(array('isdomestic' => 3));
+        $object->save();
+    }
+
+    /**
+     * @expectedException Pheasant\Exception
+     */
+    public function testEmptyEnumNotAllowed()
+    {
+        $this->initialize('Pheasant\FailDomainObject', function($builder) {
+            $builder->properties(array(
+                'uhoh' => new Types\EnumType(array()),
+            ));
+        });
+
+        $this->pheasant->register('Pheasant\DomainObject', new RowMapper('domainobject'));
+        $this->migrate('domainobject', DomainObject::schema());
     }
 }

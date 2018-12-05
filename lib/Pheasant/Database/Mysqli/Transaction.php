@@ -51,7 +51,7 @@ class Transaction
      * Bind closure to specified event on the current savepoint
      * @chainable
      */
-    public function afterRollabck(\Closure $closure){
+    public function afterRollback(\Closure $closure){
         $this->_events->register('beforeTransaction', function($e, $self) use($closure) {
             $savepoint = $self->currentSavepoint();
             $self->events()->register($savepoint === null

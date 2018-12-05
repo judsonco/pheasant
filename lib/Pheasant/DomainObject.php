@@ -105,7 +105,7 @@ class DomainObject implements \ArrayAccess
         };
 
         $transaction = \Pheasant::transaction($closure, false);
-        $transaction->afterRollabck(function() use($self, $wasCreate){
+        $transaction->afterRollback(function() use($self, $wasCreate){
             $self->trigger('afterRollback', $self);
             $self->trigger($wasCreate ? 'afterRollbackOnCreate' : 'afterRollbackOnUpdate', $self);
         });
@@ -173,7 +173,7 @@ class DomainObject implements \ArrayAccess
         };
 
         $transaction = \Pheasant::transaction($closure, false);
-        $transaction->afterRollabck(function() use($self){
+        $transaction->afterRollback(function() use($self){
             $self->trigger('afterRollback', $self);
             $self->trigger('afterRollbackOnDelete', $self);
         });

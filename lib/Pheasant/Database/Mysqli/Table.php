@@ -249,7 +249,7 @@ class Table
      */
     private function _buildSet($data)
     {
-        $columns = '';
+        $columns = array();
 
         foreach($data as $key=>$value)
             $columns[] = sprintf('`%s`=?',$key);
